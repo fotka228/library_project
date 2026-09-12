@@ -1,0 +1,243 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library API — Developer Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0b1120;
+            --bg-card: #1e293b;
+            --border-card: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #38bdf8;
+            --accent-green: #22c55e;
+            --badge-get: #0284c7;
+            --badge-post: #16a34a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2.5rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container { max-width: 1000px; width: 100%; }
+
+        header { text-align: center; margin-bottom: 2.5rem; }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--accent-green);
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            margin-bottom: 1rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle { font-size: 1.05rem; color: var(--text-muted); max-width: 650px; margin: 0 auto; line-height: 1.5; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            padding: 1.4rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.15);
+        }
+
+        .card-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
+        .card-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.35rem; }
+        .card-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 1rem; }
+        .card-link { font-size: 0.85rem; font-weight: 600; color: var(--primary); }
+
+        .section-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+
+        .table-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1.25rem;
+            border-bottom: 1px solid var(--border-card);
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+        .row:last-child { border-bottom: none; }
+        .row:hover { background: rgba(255, 255, 255, 0.02); }
+
+        .method {
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            min-width: 55px;
+            text-align: center;
+        }
+        .method.get { background: rgba(2, 132, 199, 0.2); color: var(--primary); }
+        .method.post { background: rgba(22, 163, 74, 0.2); color: #4ade80; }
+
+        .endpoint { font-family: monospace; font-weight: 600; min-width: 250px; }
+        .endpoint a { color: inherit; text-decoration: none; }
+        .endpoint a:hover { color: var(--primary); text-decoration: underline; }
+
+        .desc { color: var(--text-muted); flex: 1; }
+        .auth { font-size: 0.75rem; padding: 0.2rem 0.5rem; background: #334155; border-radius: 4px; }
+
+        footer { text-align: center; color: var(--text-muted); font-size: 0.85rem; padding-top: 1.5rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                Library API v1.0 • Online
+            </div>
+            <h1>Library API Developer Portal</h1>
+            <p class="subtitle">Вітаємо в API електронної бібліотеки. Тут ви знайдете швидкий доступ до інтерактивної документації, панелі керування та основних ендпоінтів.</p>
+        </header>
+
+        <div class="grid">
+            <a href="/api/schema/swagger-ui/" class="card">
+                <div>
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">Swagger UI</div>
+                    <div class="card-desc">Інтерактивне тестування всіх API запитів через браузер.</div>
+                </div>
+                <div class="card-link">Відкрити Swagger &rarr;</div>
+            </a>
+
+            <a href="/api/schema/redoc/" class="card">
+                <div>
+                    <div class="card-icon">📖</div>
+                    <div class="card-title">ReDoc</div>
+                    <div class="card-desc">Детальна технічна документація та схеми моделей.</div>
+                </div>
+                <div class="card-link">Відкрити ReDoc &rarr;</div>
+            </a>
+
+            <a href="/admin/" class="card">
+                <div>
+                    <div class="card-icon">🛠️</div>
+                    <div class="card-title">Django Admin</div>
+                    <div class="card-desc">Керування книгами, авторами, позиками та читачами.</div>
+                </div>
+                <div class="card-link">Увійти в адмінку &rarr;</div>
+            </a>
+
+            <a href="/api/books/" class="card">
+                <div>
+                    <div class="card-icon">📚</div>
+                    <div class="card-title">Каталог книг</div>
+                    <div class="card-desc">Список книг із підтримкою фільтрації та пошуку.</div>
+                </div>
+                <div class="card-link">Переглянути книги &rarr;</div>
+            </a>
+        </div>
+
+        <div class="section-title">
+            <span>🚀</span> Головні Endpoints
+        </div>
+
+        <div class="table-box">
+            <div class="row">
+                <span class="method get">GET</span>
+                <span class="endpoint"><a href="/api/books/">/api/books/</a></span>
+                <span class="desc">Список усіх книг бібліотеки</span>
+                <span class="auth">AllowAny</span>
+            </div>
+            <div class="row">
+                <span class="method get">GET</span>
+                <span class="endpoint"><a href="/api/books/available/">/api/books/available/</a></span>
+                <span class="desc">Тільки книги, які є в наявності</span>
+                <span class="auth">AllowAny</span>
+            </div>
+            <div class="row">
+                <span class="method get">GET</span>
+                <span class="endpoint"><a href="/api/authors/">/api/authors/</a></span>
+                <span class="desc">Список авторів</span>
+                <span class="auth">AllowAny</span>
+            </div>
+            <div class="row">
+                <span class="method post">POST</span>
+                <span class="endpoint"><a href="/api/register/">/api/register/</a></span>
+                <span class="desc">Реєстрація нового читача</span>
+                <span class="auth">AllowAny (Throttled)</span>
+            </div>
+            <div class="row">
+                <span class="method post">POST</span>
+                <span class="endpoint"><a href="/api/token/">/api/token/</a></span>
+                <span class="desc">Отримання JWT access/refresh токенів</span>
+                <span class="auth">AllowAny</span>
+            </div>
+            <div class="row">
+                <span class="method get">GET</span>
+                <span class="endpoint"><a href="/api/borrowings/">/api/borrowings/</a></span>
+                <span class="desc">Історія позик книг</span>
+                <span class="auth">IsAuthenticated</span>
+            </div>
+        </div>
+
+        <footer>
+            <p>Library Management System • Django REST Framework • SimpleJWT</p>
+        </footer>
+    </div>
+</body>
+</html>

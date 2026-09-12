@@ -1,63 +1,55 @@
-from datetime import date
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from .models import Author, Book, Borrowing, Reader
 
+from .models import Author, Book, Borrowing
 
+Reader = get_user_model()
 class AuthorSerializer(serializers.ModelSerializer):
-    book_count = serializers.ReadOnlyField()
-
     class Meta:
         model = Author
-        fields = ['id', 'name', 'bio', 'birth_date', 'photo', 'book_count']
-
-
+        fields = '__all__'
 class BookSerializer(serializers.ModelSerializer):
-    is_available = serializers.BooleanField(read_only=True)
+    author = AuthorSerializer(read_only=True)
+    author_id = serializers.PrimaryKeyRelatedField(
+        queryset=Author.objects.all(), source='author', write_only=True
+    )
 
     class Meta:
         model = Book
-        fields = [
-            'id', 'title', 'author', 'description', 'isbn',
-            'published_date', 'pages', 'cover', 'available_copies', 'is_available'
-        ]
-
-    def validate_pages(self, value):
-        if value <= 0:
-            raise serializers.ValidationError("Кількість сторінок має бути більшою за 0.")
-        return value
-
-    def validate_isbn(self, value):
-        if len(value) != 13:
-            raise serializers.ValidationError("ISBN має складатися exactamente з 13 символів.")
-        return value
-
-
-class BookDetailSerializer(BookSerializer):
-    author = AuthorSerializer(read_only=True)
-    total_borrowings = serializers.SerializerMethodField()
-
-    class Meta(BookSerializer.Meta):
-        fields = BookSerializer.Meta.fields + ['total_borrowings']
-
-    def get_total_borrowings(self, obj):
-        return obj.borrowings.count()
-
-
+        fields = ['id', 'title', 'author', 'author_id', 'pages', 'is_available']
 class BorrowingSerializer(serializers.ModelSerializer):
-    book_title = serializers.CharField(source='book.title', read_only=True)
-    reader_name = serializers.CharField(source='reader.username', read_only=True)
-    days_borrowed = serializers.SerializerMethodField()
-
     class Meta:
         model = Borrowing
-        fields = [
-            'id', 'book', 'reader', 'book_title', 'reader_name',
-            'borrowed_date', 'return_date', 'is_returned', 'days_borrowed'
-        ]
+        fields = '__all__'
+class ReaderRegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[validate_password],
+        style={'input_type': 'password'}
+    )
+    password_confirm = serializers.CharField(
+        write_only=True,
+        required=True,
+        style={'input_type': 'password'}
+    )
 
-    def get_days_borrowed(self, obj):
-        if obj.is_returned and obj.return_date:
-            delta = obj.return_date - obj.borrowed_date
-        else:
-            delta = date.today() - obj.borrowed_date
-        return delta.days
+    class Meta:
+        model = Reader
+        fields = ['id', 'username', 'email', 'phone', 'address', 'password', 'password_confirm']
+
+    def validate_email(self, value):
+        if Reader.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("Користувач із цим email вже існує.")
+        return value.lower()
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError({"password_confirm": "Паролі не збігаються."})
+        return attrs
+
+    def create(self, validated_data):
+        validated_data.pop('password_confirm')
+        password = validated_data.pop('password')
+        return Reader.objects.create_user(password=password, **validated_data)

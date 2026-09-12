@@ -1,0 +1,45 @@
+
+GET http://127.0.0.1:8000/
+
+POST http://127.0.0.1:8000/api/register/
+Content-Type: application/json
+
+{
+    "username": "reader_taras",
+    "email": "taras.reader@example.com",
+    "phone": "+380501234567",
+    "address": "м. Київ, вул. Хрещатик, 1",
+    "password": "StrongPassword123!",
+    "password_confirm": "StrongPassword123!"
+}
+
+###
+POST http://127.0.0.1:8000/api/register/
+Content-Type: application/json
+
+{
+    "username": "reader_fail",
+    "email": "fail@example.com",
+    "password": "Password123!",
+    "password_confirm": "DifferentPassword456!"
+}
+
+###
+POST http://127.0.0.1:8000/api/token/
+Content-Type: application/json
+
+{
+    "username": "reader_taras",
+    "password": "StrongPassword123!"
+}
+
+###
+POST http://127.0.0.1:8000/api/register/
+Content-Type: application/json
+
+{
+    "username": "throttle_test",
+    "email": "throttle@example.com",
+    "password": "Password123!",
+    "password_confirm": "Password123!"
+}
