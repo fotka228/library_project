@@ -1,13 +1,18 @@
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Author, Book, Borrowing
-from .serializers import AuthorSerializer, BookSerializer, BorrowingSerializer, ReaderRegisterSerializer
+from .serializers import (
+    AuthorSerializer,
+    BookSerializer,
+    BorrowingSerializer,
+    ReaderRegisterSerializer
+)
 from .filters import (
     BookFilter,
     BorrowingFilter,
@@ -18,6 +23,13 @@ from .filters import (
 from .throttles import RegisterRateThrottle, BorrowingRateThrottle
 
 Reader = get_user_model()
+
+
+class IsAdminUserOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        return bool(request.user and request.user.is_staff)
 
 
 def landing_page(request):
@@ -45,20 +57,24 @@ class ReaderRegisterAPIView(generics.CreateAPIView):
             }
         }, status=status.HTTP_201_CREATED, headers=headers)
 
+
 class AuthorListCreateAPIView(generics.ListCreateAPIView):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
+    permission_classes = [IsAdminUserOrReadOnly]
 
 
 class AuthorDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
     lookup_url_kwarg = 'author_id'
+    permission_classes = [IsAdminUserOrReadOnly]
 
 
 class BookListCreateAPIView(generics.ListCreateAPIView):
     queryset = Book.objects.select_related('author').all()
     serializer_class = BookSerializer
+    permission_classes = [IsAdminUserOrReadOnly]
     filter_backends = [DjangoFilterBackend, MinPagesFilterBackend]
     filterset_class = BookFilter
 
@@ -66,27 +82,41 @@ class BookListCreateAPIView(generics.ListCreateAPIView):
 class BookDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+    permission_classes = [IsAdminUserOrReadOnly]
 
 
 class BorrowingListCreateAPIView(generics.ListCreateAPIView):
-    queryset = Borrowing.objects.prefetch_related('book', 'reader').all()
     serializer_class = BorrowingSerializer
     permission_classes = [IsAuthenticated]
     throttle_classes = [BorrowingRateThrottle]
     filter_backends = [DjangoFilterBackend]
     filterset_class = BorrowingFilter
 
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Borrowing.objects.select_related('book', 'reader').all()
+        if user.is_staff:
+            return queryset
+        return queryset.filter(reader=user)
+
 
 class AvailableBooksAPIView(generics.ListAPIView):
     queryset = Book.objects.select_related('author').order_by('pk')
     serializer_class = BookSerializer
+    permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, AvailableBooksFilterBackend]
     filterset_class = BookFilter
 
 
 class ActiveBorrowingsAPIView(generics.ListAPIView):
-    queryset = Borrowing.objects.prefetch_related('book', 'reader').order_by('-borrowed_date')
     serializer_class = BorrowingSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, ActiveBorrowingsFilterBackend]
     filterset_class = BorrowingFilter
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Borrowing.objects.select_related('book', 'reader').order_by('-borrowed_date')
+        if user.is_staff:
+            return queryset
+        return queryset.filter(reader=user)

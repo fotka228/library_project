@@ -21,7 +21,7 @@ Content-Type: application/json
     "username": "reader_fail",
     "email": "fail@example.com",
     "password": "Password123!",
-    "password_confirm": "DifferentPassword456!"
+    "password_confirm": "Password1234!"
 }
 
 ###

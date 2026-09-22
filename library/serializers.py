@@ -5,10 +5,14 @@ from rest_framework import serializers
 from .models import Author, Book, Borrowing
 
 Reader = get_user_model()
+
+
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
         fields = '__all__'
+
+
 class BookSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     author_id = serializers.PrimaryKeyRelatedField(
@@ -17,11 +21,34 @@ class BookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Book
-        fields = ['id', 'title', 'author', 'author_id', 'pages', 'is_available']
+        fields = [
+            'id', 
+            'title', 
+            'author', 
+            'author_id', 
+            'pages', 
+            'available_copies', 
+            'published_date', 
+            'is_available'
+        ]
+
+    def validate_pages(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Кількість сторінок повинна бути більше 0.")
+        return value
+
+    def validate_available_copies(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Кількість копій не може бути від'ємною.")
+        return value
+
+
 class BorrowingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Borrowing
         fields = '__all__'
+
+
 class ReaderRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,
